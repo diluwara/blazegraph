@@ -90,6 +90,9 @@ def get_all_instances():
         for instance in instances
     ]
 
+def get_instance_by_id(instance_id: Any) -> Instance:
+    return Instance.query.filter_by(id=instance_id).first()
+
 def start_instance(instance_id: Any) -> Union[Dict[str, Any], Tuple[Dict[str, str], Literal[500]], Tuple[Dict[str, str], Literal[400]], Tuple[Dict[str, str], Literal[404]]]:
     instance = get_instance_by_id(instance_id)
     if not instance:
