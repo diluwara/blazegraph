@@ -1,4 +1,3 @@
-Here’s the updated information for your README, including details about using a `.env.example` file and Python 3.10:
 ## Environment Configuration
 
 This application uses environment variables to manage sensitive information and configuration details. These variables are loaded from a `.env` file. For convenience, a `.env.example` file is provided in the repository to help you set up your environment.
