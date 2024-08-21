@@ -1,5 +1,6 @@
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import requests
 from blazegraph_namespace import create_namespace
 from db_model import db
@@ -7,6 +8,7 @@ from instance_manager import create_and_run_instance, get_all_instances, start_i
 from utils import get_instance_by_id
 
 app = Flask(__name__)
+CORS(app)
 
 # Configuration for PostgreSQL
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
