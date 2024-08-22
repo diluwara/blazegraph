@@ -2,7 +2,8 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
-from blazegraph_namespace import create_namespace
+import xml.etree.ElementTree as ET
+from blazegraph_namespace import create_namespace, extract_namespace_names
 from db_model import db
 from instance_manager import create_and_run_instance, get_all_instances, start_instance, stop_instance
 from utils import get_instance_by_id
@@ -11,7 +12,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Configuration for PostgreSQL
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgresql10:786786Dkk@blazegraph.postgres.database.azure.com:5432/blazegraph?sslmode=require"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -19,6 +20,11 @@ db.init_app(app)
 # Ensure that the tables are created within the application context
 with app.app_context():
     db.create_all()
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({'message': 'Welcome to the API'}), 200
 
 
 @app.route('/create_instance', methods=['POST'])
@@ -162,6 +168,35 @@ def upload_ttl_route():
         }), response.status_code
 
 from flask import request, jsonify
+
+@app.route('/get_namespaces/<int:instance_id>', methods=['GET'])
+def get_namespaces(instance_id):
+    # Fetch the instance details based on the provided instance_id
+    instance = get_instance_by_id(instance_id)
+    if not instance:
+        return jsonify({"error": "Instance not found"}), 404
+
+    # Construct the dynamic Blazegraph URL using dot notation
+    namespace_url = f"http://{instance.ip_address}:{instance.port}/blazegraph/namespace"
+
+    try:
+        # Make a GET request to Blazegraph to fetch the XML data
+        response = requests.get(namespace_url)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        
+        # Extract namespace names from the XML response
+        namespace_names = extract_namespace_names(response.text)
+        
+        # Return the list of namespace names as JSON
+        return jsonify({"namespaces": namespace_names}), 200
+    
+    except requests.exceptions.RequestException as e:
+        # Handle any HTTP-related errors
+        return jsonify({"error": f"Failed to fetch namespaces: {str(e)}"}), 500
+
+    except ET.ParseError as e:
+        # Handle XML parsing errors
+        return jsonify({"error": f"Failed to parse XML response: {str(e)}"}), 500
 
 
 @app.route('/run_query', methods=['POST'])

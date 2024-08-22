@@ -42,7 +42,7 @@ This API allows you to manage Blazegraph instances, namespaces, and upload TTL f
   ```json
   {
     "instance_name": "my_instance",
-    "port": "9999",
+    "port": 9999,
     "install_path": "/path/to/blazegraph",
     "min_memory": "512M",
     "max_memory": "1024M",
